@@ -12,7 +12,7 @@ pnpm start
 ```
 
 Docker: `compose.yml` is the production (Portainer) stack. Values come from the stack's environment
-(`${VAR:?}` = required), state lives in `${ROOT}/opservbot/data` (writable by uid 1000; back it up),
+(`${VAR:?}` = required; `SENTRY_DSN` optional, the `opservbot` project's DSN), state lives in `${ROOT}/opservbot/data` (writable by uid 1000; back it up),
 and it joins the external `opserv_bot` network. OpServ reaches the bot at
 `http://opservbot:4500/opserv/v1`. CI publishes `ghcr.io/the-bwc/opservbot:main` (and `:<sha>`),
 scanned and signed; check a pulled image with

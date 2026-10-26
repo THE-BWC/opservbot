@@ -16,7 +16,7 @@ const h = {
 	voiceChannels: vi.fn(async () => ok())
 } satisfies Handlers;
 
-const server = createApi(h, { error: () => {} } as unknown as Console);
+const server = createApi(h, () => {});
 let base = '';
 beforeAll(async () => {
 	await new Promise<void>((r) => server.listen(0, r));

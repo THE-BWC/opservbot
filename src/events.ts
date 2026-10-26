@@ -10,6 +10,7 @@ import { convert } from 'html-to-text';
 import { ok, type Reply } from './api.ts';
 import { db } from './db.ts';
 import { opserv, type Operation } from './opserv.ts';
+import { report } from './sentry.ts';
 
 /** One Discord scheduled event per upcoming non-OPSEC op (SPEC "Event reconcile"). */
 
@@ -102,6 +103,6 @@ export async function syncAll(guild: Guild) {
 		const listed = upcoming.find((op) => op.id === id);
 		const stored = stmt.get.get(id) as Stored | undefined;
 		if (listed && stored && listed.updatedAt === stored.op_updated_at) continue;
-		await reconcile(guild, id).catch((err) => console.error(`[EVENTS] op ${id}`, err));
+		await reconcile(guild, id).catch((err) => report(`EVENTS op ${id}`, err));
 	}
 }

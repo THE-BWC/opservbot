@@ -8,6 +8,9 @@ RUN pnpm install --frozen-lockfile --prod
 FROM node:26-slim@sha256:193fe51b64e77981119c98c2002c9e32a70e2f006fb4d25068ce0558998917f0
 WORKDIR /app
 ENV NODE_ENV=production PORT=4500
+# The commit SHA (CI build arg): tags Sentry error reports with the release.
+ARG SENTRY_RELEASE
+ENV SENTRY_RELEASE=$SENTRY_RELEASE
 # The bot only runs `node`; the bundled npm CLI is unused attack surface (and the source of most image CVEs).
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 COPY --from=build --chown=node:node /app/package.json ./

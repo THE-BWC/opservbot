@@ -26,17 +26,18 @@ other than the bot's own SQLite file.
 
 ## Configuration (env)
 
-| Var                     | Use                                                                                                                                                       |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DISCORD_TOKEN`         | bot login                                                                                                                                                 |
-| `DISCORD_GUILD_ID`      | the one BWC guild (single-guild; legacy's multi-guild tables dropped)                                                                                     |
-| `OPSERV_READ_API_URL`   | `http://opserv:3000/api/bot/v1`                                                                                                                           |
-| `BOT_READ_API_TOKEN`    | bot → OpServ                                                                                                                                              |
-| `DISCORD_BOT_API_TOKEN` | OpServ → bot (checked)                                                                                                                                    |
-| `OPSERV_PUBLIC_URL`     | link base for posts → `${url}/operations/{id}`. Staging `https://opserv-staging.blackwidowcompany.com`, production `https://opserv.blackwidowcompany.com` |
-| `PORT`                  | default `4500`; bot API at `/opserv/v1/*`, health at `/healthz`                                                                                           |
-| `DB_PATH`               | default `data/bot.db`                                                                                                                                     |
-| `STREAMER_ROLE_ID`      | streamer role                                                                                                                                             |
+| Var                     | Use                                                                                                                                                                          |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DISCORD_TOKEN`         | bot login                                                                                                                                                                    |
+| `DISCORD_GUILD_ID`      | the one BWC guild (single-guild; legacy's multi-guild tables dropped)                                                                                                        |
+| `OPSERV_READ_API_URL`   | `http://opserv:3000/api/bot/v1`                                                                                                                                              |
+| `BOT_READ_API_TOKEN`    | bot → OpServ                                                                                                                                                                 |
+| `DISCORD_BOT_API_TOKEN` | OpServ → bot (checked)                                                                                                                                                       |
+| `OPSERV_PUBLIC_URL`     | link base for posts → `${url}/operations/{id}`. Staging `https://opserv-staging.blackwidowcompany.com`, production `https://opserv.blackwidowcompany.com`                    |
+| `PORT`                  | default `4500`; bot API at `/opserv/v1/*`, health at `/healthz`                                                                                                              |
+| `DB_PATH`               | default `data/bot.db`                                                                                                                                                        |
+| `STREAMER_ROLE_ID`      | streamer role                                                                                                                                                                |
+| `SENTRY_DSN`            | Sentry project `opservbot` (org `patrickpedersentech`); empty = no error reports. `SENTRY_ENVIRONMENT` (default `production`), `SENTRY_RELEASE` (commit SHA, baked in by CI) |
 
 Rapid Response ids (channel, roles, emojis) live in one const table in `src/rapid-response.ts`
 _(default; they never changed in 3 years — env if a dev guild is needed)_.
@@ -125,6 +126,18 @@ it's in memory, so a restart resets it _(default)_.
 
 `presenceUpdate` in the guild: member holding BWC (key role from `GET key-roles`, cached 5 min)
 and streaming → add `STREAMER_ROLE_ID`; not streaming → remove.
+
+## Error reporting (Sentry)
+
+Errors only, with OpServ-V10's options (no tracing, no personal data). Unexpected failures go through
+`report()` (`src/sentry.ts`): the log gets the stack only, Sentry gets the error at most once an hour
+per job and message (OpServ down would otherwise mean three errors a minute). Misconfigurations
+(OPSEC op with no game channel, missing channel, no bot log channel) are warnings via `warn()`.
+OPSEC: discord.js errors carry the request they failed on, so an error's own fields never leave the
+process (stack-only logs, console breadcrumbs dropped, `scrubEvent` keeps only SDK contexts) and
+Discord interaction/webhook tokens are masked; `sentry.test.ts` sends such an error through the real
+SDK and checks. Crons: the daily op list checks in as monitor `daily-op-list` (07:00 New York), so a
+missed or failed list alerts. Bot API failures also reach OpServ's own Sentry through its audit.
 
 ## Data (SQLite)
 

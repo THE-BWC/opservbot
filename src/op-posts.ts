@@ -2,6 +2,7 @@ import { EmbedBuilder, type Guild } from 'discord.js';
 import { config } from './config.ts';
 import { db, getSetting, setSetting } from './db.ts';
 import { opserv, type UpcomingOp } from './opserv.ts';
+import { monitored, warn } from './sentry.ts';
 
 /** Daily op list and 30-minute notices (SPEC "Background"). OPSEC ops only ever go to their game's channel. */
 
@@ -69,7 +70,7 @@ export function listEmbeds(ops: UpcomingOp[]): EmbedBuilder[] {
 async function send(guild: Guild, channelId: string, embeds: EmbedBuilder[]) {
 	const channel = await guild.channels.fetch(channelId).catch(() => null);
 	if (!channel?.isSendable()) {
-		console.warn(`[POSTS] channel ${channelId} missing or not sendable`);
+		warn('POSTS', `channel ${channelId} missing or not sendable`);
 		return;
 	}
 	for (const embed of embeds) await channel.send({ embeds: [embed] });
@@ -82,7 +83,7 @@ export async function postOpList(guild: Guild) {
 		gameChannels(),
 		getSetting('announcement_channel')
 	);
-	if (skipped.length) console.warn(`[POSTS] ops with no channel to go to: ${skipped.join(', ')}`);
+	if (skipped.length) warn('POSTS', `ops with no channel to go to: ${skipped.join(', ')}`);
 	for (const [channelId, list] of groups) await send(guild, channelId, listEmbeds(list));
 }
 
@@ -105,7 +106,7 @@ export async function postOpListIfDue(guild: Guild, now = new Date()) {
 	const date = opListDue(now, getSetting('oplist_last_date'));
 	if (!date) return;
 	setSetting('oplist_last_date', date); // first, so a failure doesn't repost every minute
-	await postOpList(guild);
+	await monitored('daily-op-list', '0 7 * * *', () => postOpList(guild));
 }
 
 export function dueForNotice(ops: UpcomingOp[], now: Date, notified: (op: UpcomingOp) => boolean) {

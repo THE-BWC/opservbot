@@ -10,6 +10,7 @@ import {
 import { fail, ok, type Reply } from './api.ts';
 import { getSetting } from './db.ts';
 import { opserv, type KeyRoles, type Member } from './opserv.ts';
+import { warn } from './sentry.ts';
 
 /** `members/sync`, `roles/give`, `roles/remove` (SPEC "members/sync by status"). */
 
@@ -121,7 +122,10 @@ async function botLog(
 	const channel = id ? await guild.channels.fetch(id).catch(() => null) : null;
 	if (channel?.isSendable()) {
 		await channel.send({ content: text, components, allowedMentions: { parse: [] } });
-	} else console.warn(`[LOG] no bot log channel set: ${text}`);
+	} else {
+		warn('LOG', 'no bot log channel set (/setlogchannel)');
+		console.warn(`[LOG] ${text}`);
+	}
 }
 
 export const BAN_PREFIX = 'ban:';

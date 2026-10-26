@@ -43,6 +43,9 @@ BWC's Discord bot, rewritten from scratch to work against OpServ V10. Replaces `
 
 - **Always:** check `DISCORD_BOT_API_TOKEN` in constant time on every bot API request; parse
   read API responses with zod; treat operation data as OPSEC-sensitive.
+- **Errors:** report unexpected failures with `report(where, err)` from `src/sentry.ts` (logs the stack
+  only, sends to Sentry, throttled); never `console.error(…, err)`: Node prints the error's fields, and
+  a discord.js error carries the OPSEC embed it failed to post.
 - **Never:** log OPSEC op details (names, descriptions) — log ids only; post an OPSEC op anywhere
   but its game's channel; create a Discord scheduled event for an OPSEC op; connect to
   OpServ's or XenForo's database; commit `.env` or the SQLite file.

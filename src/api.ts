@@ -3,6 +3,7 @@ import { createServer, type IncomingMessage } from 'node:http';
 import { z } from 'zod';
 import { config } from './config.ts';
 import { OpservError } from './opserv.ts';
+import { report } from './sentry.ts';
 
 /**
  * The bot API OpServ calls (`../OpServ-V10/docs/bot-api.md`, "Bot API"). 2xx = done, anything else
@@ -56,7 +57,7 @@ async function readJson(req: IncomingMessage): Promise<unknown> {
 	return JSON.parse(raw);
 }
 
-export function createApi(h: Handlers, log = console) {
+export function createApi(h: Handlers, onError = report) {
 	const routes: Record<string, { method: 'GET' | 'POST'; run: (body: unknown) => Promise<Reply> }> =
 		{
 			'operations/changed': {
@@ -92,7 +93,7 @@ export function createApi(h: Handlers, log = console) {
 			return await route.run(body);
 		} catch (err) {
 			if (err instanceof z.ZodError) return fail(400, `Bad body: ${z.prettifyError(err)}`);
-			log.error(`[API] ${req.method} ${path}`, err);
+			onError(`API ${req.method} ${path}`, err);
 			if (err instanceof OpservError) return fail(502, err.message);
 			return fail(500, err instanceof Error ? err.message : 'Internal error');
 		}

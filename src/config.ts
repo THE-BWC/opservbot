@@ -12,6 +12,13 @@ export const config = z
 		OPSERV_PUBLIC_URL: z.url(),
 		PORT: z.coerce.number().int().default(4500),
 		DB_PATH: z.string().default('data/bot.db'),
-		STREAMER_ROLE_ID: snowflake
+		STREAMER_ROLE_ID: snowflake,
+		// Empty = no error reports, as OpServ-V10.
+		SENTRY_DSN: z.union([z.url(), z.literal('')]).default(''),
+		SENTRY_ENVIRONMENT: z.string().default('production'),
+		SENTRY_RELEASE: z
+			.string()
+			.optional()
+			.transform((v) => v || undefined) // commit SHA, from CI
 	})
 	.parse(process.env);

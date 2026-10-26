@@ -1,3 +1,5 @@
+// First: Sentry hooks uncaught errors before anything else runs.
+import { report } from './sentry.ts';
 import {
 	ActivityType,
 	Client,
@@ -32,7 +34,7 @@ const client = new Client({
 	presence: { activities: [{ name: 'OpServ', type: ActivityType.Watching }] }
 });
 
-const logErr = (what: string) => (err: unknown) => console.error(`[${what}]`, err);
+const logErr = (where: string) => (err: unknown) => report(where, err);
 
 client.once(Events.ClientReady, async () => {
 	console.log(`[DISCORD] logged in as ${client.user?.tag}`);

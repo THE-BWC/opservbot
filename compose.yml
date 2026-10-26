@@ -14,6 +14,8 @@ services:
       DISCORD_BOT_API_TOKEN: ${DISCORD_BOT_API_TOKEN:?} # OpServ → bot; same value in OpServ's stack, different from the above
       OPSERV_PUBLIC_URL: ${OPSERV_PUBLIC_URL:-https://opserv.blackwidowcompany.com}
       STREAMER_ROLE_ID: ${STREAMER_ROLE_ID:?}
+      SENTRY_DSN: ${SENTRY_DSN:-} # empty: no error reports
+      SENTRY_ENVIRONMENT: production
     volumes:
       - ${ROOT:?}/opservbot/data:/app/data # bot.db: event map, game channels, settings; include in backups
     networks: [opserv_bot] # no Traefik: only OpServ reaches the bot API
