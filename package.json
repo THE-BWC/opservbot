@@ -1,0 +1,37 @@
+{
+	"name": "opservbot",
+	"version": "2.0.0",
+	"description": "Black Widow Company's Discord bot for OpServ V10",
+	"private": true,
+	"type": "module",
+	"license": "MIT",
+	"engines": {
+		"node": ">=26"
+	},
+	"packageManager": "pnpm@10.34.7",
+	"scripts": {
+		"start": "node --env-file-if-exists=.env src/main.ts",
+		"lint": "prettier --check --cache . && eslint --cache --cache-strategy content --cache-location node_modules/.cache/eslint/ .",
+		"format": "prettier --write .",
+		"check": "tsc --noEmit",
+		"test": "vitest run",
+		"import-legacy": "node --env-file-if-exists=.env scripts/import-legacy.ts"
+	},
+	"dependencies": {
+		"discord.js": "14.27.0",
+		"html-to-text": "10.0.1",
+		"zod": "4.6.7"
+	},
+	"devDependencies": {
+		"@eslint/js": "10.0.1",
+		"@types/html-to-text": "9.0.4",
+		"@types/node": "26.6.5",
+		"eslint": "10.12.0",
+		"eslint-config-prettier": "10.1.8",
+		"globals": "17.13.0",
+		"prettier": "3.9.10",
+		"typescript": "6.0.3",
+		"typescript-eslint": "8.71.1",
+		"vitest": "4.1.12"
+	}
+}

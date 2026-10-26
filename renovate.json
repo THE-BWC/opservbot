@@ -1,0 +1,70 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": ["config:recommended", "helpers:pinGitHubActionDigests", "schedule:weekly"],
+	"internalChecksFilter": "strict",
+	"ignoreScripts": false,
+	"packageRules": [
+		{
+			"description": "Matches minimumReleaseAge in pnpm-workspace.yaml: hijacked releases are usually pulled within 7 days, and pnpm refuses anything younger anyway.",
+			"matchPackageNames": ["*"],
+			"minimumReleaseAge": "7 days"
+		},
+		{
+			"matchManagers": ["npm"],
+			"matchDepTypes": ["devDependencies"],
+			"matchUpdateTypes": ["minor", "patch"],
+			"groupName": "dev dependencies",
+			"minimumReleaseAge": "7 days"
+		},
+		{
+			"matchManagers": ["npm"],
+			"matchDepTypes": ["dependencies"],
+			"matchUpdateTypes": ["minor", "patch"],
+			"groupName": "dependencies",
+			"minimumReleaseAge": "7 days"
+		},
+		{
+			"description": "Actions, their service/container images and the tool versions they pin.",
+			"matchManagers": ["github-actions"],
+			"matchFileNames": [".github/workflows/**"],
+			"groupName": "pipelines"
+		},
+		{
+			"matchManagers": ["custom.regex"],
+			"matchFileNames": [".github/workflows/**"],
+			"groupName": "pipelines"
+		},
+		{
+			"description": "packageManager and the Dockerfile must agree on pnpm.",
+			"matchPackageNames": ["pnpm"],
+			"groupName": "pnpm",
+			"minimumReleaseAge": "7 days"
+		}
+	],
+	"customManagers": [
+		{
+			"description": "Tool versions in workflows, annotated with a '# renovate:' comment on the line above.",
+			"customType": "regex",
+			"managerFilePatterns": ["/^\\.github/workflows/.+\\.ya?ml$/"],
+			"matchStrings": [
+				"#\\s*renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: extractVersion=(?<extractVersion>\\S+))?\\s+[\\w-]+:\\s*['\"]?(?<currentValue>[^'\"\\s]+)"
+			]
+		},
+		{
+			"description": "actionlint runs via docker run inside a run: step.",
+			"customType": "regex",
+			"managerFilePatterns": ["/^\\.github/workflows/.+\\.ya?ml$/"],
+			"matchStrings": [
+				"(?<depName>rhysd/actionlint):(?<currentValue>[^@\\s]+)@(?<currentDigest>sha256:[a-f0-9]+)"
+			],
+			"datasourceTemplate": "docker"
+		},
+		{
+			"customType": "regex",
+			"managerFilePatterns": ["/(^|/)Dockerfile$/"],
+			"matchStrings": ["npm install -g pnpm@(?<currentValue>\\S+)"],
+			"depNameTemplate": "pnpm",
+			"datasourceTemplate": "npm"
+		}
+	]
+}

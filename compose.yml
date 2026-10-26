@@ -1,0 +1,23 @@
+# Production stack (Portainer). Values come from the stack's environment, never from the repo.
+# Required: ROOT, DISCORD_TOKEN, DISCORD_GUILD_ID, BOT_READ_API_TOKEN, DISCORD_BOT_API_TOKEN, STREAMER_ROLE_ID.
+services:
+  # OpServ calls the bot as `opservbot` (its DISCORD_BOT_API_URL); keep the name.
+  opservbot:
+    image: ghcr.io/the-bwc/opservbot:main
+    build: .
+    restart: unless-stopped
+    environment:
+      DISCORD_TOKEN: ${DISCORD_TOKEN:?}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:?}
+      OPSERV_READ_API_URL: ${OPSERV_READ_API_URL:-http://opserv:3000/api/bot/v1} # over opserv_bot, never Cloudflare
+      BOT_READ_API_TOKEN: ${BOT_READ_API_TOKEN:?} # bot → OpServ; same value in OpServ's stack
+      DISCORD_BOT_API_TOKEN: ${DISCORD_BOT_API_TOKEN:?} # OpServ → bot; same value in OpServ's stack, different from the above
+      OPSERV_PUBLIC_URL: ${OPSERV_PUBLIC_URL:-https://opserv.blackwidowcompany.com}
+      STREAMER_ROLE_ID: ${STREAMER_ROLE_ID:?}
+    volumes:
+      - ${ROOT:?}/opservbot/data:/app/data # bot.db: event map, game channels, settings; include in backups
+    networks: [opserv_bot] # no Traefik: only OpServ reaches the bot API
+
+networks:
+  opserv_bot: # shared with OpServ's stack, both directions off the internet (OpServ docs/deploy.md)
+    external: true

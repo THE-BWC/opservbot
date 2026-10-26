@@ -1,0 +1,5 @@
+# No dependency may run install scripts.
+onlyBuiltDependencies: []
+# Don't resolve versions published less than 7 days ago (minutes); hijacked releases are usually pulled by then.
+# Matches minimumReleaseAge in renovate.json.
+minimumReleaseAge: 10080
